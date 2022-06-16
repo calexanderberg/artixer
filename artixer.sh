@@ -21,8 +21,25 @@ else
 	exit 1
 fi
 
-echo -e "Below is a list of your partitions, please select which one to use.\n\n"
-lsblk
-echo ""
+echo -e "Below is a list of your partitions, please select which one to use.\n"
+echo "lsblk"
 read mainPartition
-echo -e "\n\nYou selected ${mainPartition}, is this correct?"
+truePartition=false
+
+while [ truePartition != true ]
+
+do
+	echo -e "\n\nYou selected ${mainPartition}, is this correct?"
+	read decision
+	
+	if [[ $decision == "yes" || $decision == "y" ]]; then
+		truePartition=true
+		break;
+	else
+		echo -e "Please select a new partition."
+		read mainPartition
+	fi
+
+done
+
+echo -e "\n\n\ntest"
