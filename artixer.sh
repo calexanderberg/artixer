@@ -15,16 +15,14 @@ read decision
 if [[ $decision == "yes" || $decision == "y" ]]; then
 	
 	echo -e "Awesome, let's get this started!\n\n"
-	echo -e "Below is a list of your partitions, please select which one to use.\n\n"
-	lsblk	
-	echo ""
-	read mainPartition
-	echo -e "\n\nYou selected ${mainPartition}, is this correct?"
-
-	
-	
 else 
 	echo -e "\nYou did not want to continue\n"
 	echo -e "${endMessage}"
 	exit 1
 fi
+
+echo -e "Below is a list of your partitions, please select which one to use.\n\n"
+lsblk
+echo ""
+read mainPartition
+echo -e "\n\nYou selected ${mainPartition}, is this correct?"
