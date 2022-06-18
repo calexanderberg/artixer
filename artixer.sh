@@ -1,11 +1,13 @@
 #!/bin/bash
 
+clear
+
 # A script for installing Artix linux, an Arch based linux distribution.
 
 #Variables
 ENDMESSAGE="Thank you for using Artixer\nShutting down ... \n\nHave a great day"
 TRUEPARTITION=false
-BASESTRAP="base linux base-devel linux-firmware"
+BASESTRAP="base linux base-devel linux-firmware grub efibootmgr"
 
 # Startup message
 echo -e "Welcome to Artixer, an installer for Artix linux\n\n"
@@ -28,7 +30,7 @@ fi
 
 # Choosing your boot partition
 echo -e "Below is a list of your partitions, please select which one to use.\n"
-echo "lsblk"
+lsblk
 read mainPartition
 
 while [ TRUEPARTITION != true ]
@@ -56,57 +58,82 @@ read swapPart
 
 echo -e "Boot, swap, and root partition is done.\n\n"
 echo -e "Let's go over some software.\n\n"
-echo -e "Please select what init system to use"
+echo -e "Adding openrc init system to the installer\n"
 
-echo -e "Select 1 for openrc"
-echo -e "Select 2 for runit"
-echo -e "Select 3 for s6"
-echo -e "Select 4 for 66"
-# echo -e "Select 5 for dinit" - We will add this later
-read INITNUMBER
-# Make a variable for this instead otherwise it will be tedius
-
-
-case $INITNUMBER in
-	1)
-		BASESTRAP = "${BASESTRAP} openrc elogind-openrc sddm-openrc connman-openrc connman-gtk"
-		;;
-	2)
-		BASESTRAP = "${BASESTRAP} runit elogind-runit sddm-runit connman-runit connman-gtk"
-		;;
-	3)
-		BASESTRAP = "${BASESTRAP} s6-base elogind-s6 sddm-s6 connman-s6 connman-gtk"
-		;;
-	4)
-		BASESTRAP = "${BASESTRAP} 66 elogind-suite66 sddm-suite66 connman-suite66 connman-gtk"
-		;;
-	*)
-		echo -e "Please select a number within 1-5";
-		read INITNUMBER
-		#I think this will not work but we will fix it later
-	;;
-esac
+BASESTRAP = "${BASESTRAP}, openrc connman-openrc connman-gtk elogind-openrc"
 
 echo -e "\nNow for desktop environment, select one from the list below:\n"
 echo -e "Select 1 for kde"
-echo -e "Select 2 for mate (and other applications)"
-echo -e "Select 3 for xfce4"
-echo -e "Select 4 for lxqt" 
+echo -e "Select 2 for xfce4"
 case $INITNUMBER in
 	1)
 		BASESTRAP = "${BASESTRAP} plasma"
 		;;
 	2)
-		BASESTRAP = "${BASESTRAP} mate mate-extra system-config-printer blueman connman-gtk"
-		;;
-	3)
 		BASESTRAP = "${BASESTRAP} xfce4"
-		;;
-	4)
-		BASESTRAP = "${BASESTRAP} lxqt"
 		;;
 	*)
 		echo -e "You did not select a desktop environment, that's ok";
 	;;
 esac
 
+echo -e "Adding alacritty to our installer:"
+
+BASESTRAP = "${BASESTRAP} alacritty"
+
+echo -e "Adding firefox to our installer:"
+
+BASESTRAP = "${BASESTRAP} firefox"
+
+echo -e "Adding vim to our installer:"
+
+BASESTRAP = "${BASESTRAP} vim"
+
+echo -e "Done, begining install"
+
+basestrap -i /mnt ${BASESTRAP}
+
+echo -e "Install complete, now running all the commands to set up the system\n\n"
+
+fstabgen -U /mnt >> /mnt/etc/fstab
+
+artix-chroot /mnt
+
+ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
+
+hwclock --systohc
+
+grub-install --recheck /dev/${mainPartition}
+grub-mkconfig -o /boot/grub/grub.cfg
+
+echo -e "Adding the Swedish keyboard layout"
+echo "KEYMAP=sv-latin1" >> /etc/vconsole.conf
+
+echo -e "State a name for your machine"
+read NAME
+
+echo ${NAME} >> /etc/hostname
+echo ${NAME} >> /etc/conf.d/hostname
+
+echo -e "Setting up a root password"
+
+passwd
+
+echo -e "State a name for a user on your machine"
+read USER
+
+useradd -m -G wheel ${USER}
+passwd ${USER}
+
+echo -e "Time to get sudo privledge baby"
+EDITOR=vim visudo
+
+echo -e "Enabling all services we require."
+
+rc-update add connmand
+rc-update add sddm
+
+echo -e "Rebooting the system"
+exit
+umount -R /mnt
+reboot
