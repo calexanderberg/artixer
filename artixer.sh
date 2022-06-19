@@ -94,27 +94,14 @@ echo -e "Done, begining install"
 basestrap -i /mnt ${BASESTRAP}
 
 
-
-
 echo -e "Install complete, now running all the commands to set up the system\n\n"
 
 fstabgen -U /mnt >> /mnt/etc/fstab
 
 artix-chroot /mnt
 
-echo -e "installing yay"
-
-git clone https://aur.archlinux.org/yay.git
-cd yay
-makepkg -si
-cd ..
-rm -rf yay/
-
-
 ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
-
 hwclock --systohc
-
 grub-install --recheck /dev/${mainPartition}
 grub-mkconfig -o /boot/grub/grub.cfg
 
@@ -123,25 +110,30 @@ echo "KEYMAP=sv-latin1" >> /etc/vconsole.conf
 
 echo -e "State a name for your machine"
 read NAME
-
 echo ${NAME} >> /etc/hostname
 echo ${NAME} >> /etc/conf.d/hostname
 
 echo -e "Setting up a root password"
-
 passwd
 
 echo -e "State a name for a user on your machine"
 read USER
-
 useradd -m -G wheel ${USER}
 passwd ${USER}
 
 echo -e "Time to get sudo privledge baby"
 EDITOR=vim visudo
 
-echo -e "Enabling all services we require."
+echo -e "installing yay"
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+cd ..
+rm -rf yay/
 
+echo -e "installing all the B L O A T."
+
+echo -e "Enabling all services we require."
 rc-update add connmand
 rc-update add sddm
 
