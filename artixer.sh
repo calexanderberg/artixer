@@ -121,8 +121,8 @@ read USER
 useradd -m -G wheel ${USER}
 passwd ${USER}
 
-echo -e "Time to get sudo privledge baby"
-EDITOR=vim visudo
+#echo -e "Time to get sudo privledge baby"
+#EDITOR=vim visudo
 
 echo -e "installing yay"
 git clone https://aur.archlinux.org/yay.git
@@ -133,10 +133,13 @@ rm -rf yay/
 
 echo -e "installing all the B L O A T."
 
+echo -e "installing vm stuff"
+pacman -S qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat libguestfs libvirt-openrc
+y
+rc-update add libvirtd
+
 echo -e "Enabling all services we require."
 rc-update add connmand
-rc-update add sddm
-
 
 echo -e "Rebooting the system"
 exit
