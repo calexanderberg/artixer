@@ -93,11 +93,23 @@ echo -e "Done, begining install"
 
 basestrap -i /mnt ${BASESTRAP}
 
+
+
+
 echo -e "Install complete, now running all the commands to set up the system\n\n"
 
 fstabgen -U /mnt >> /mnt/etc/fstab
 
 artix-chroot /mnt
+
+echo -e "installing yay"
+
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+cd ..
+rm -rf yay/
+
 
 ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
 
@@ -132,6 +144,7 @@ echo -e "Enabling all services we require."
 
 rc-update add connmand
 rc-update add sddm
+
 
 echo -e "Rebooting the system"
 exit
