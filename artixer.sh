@@ -143,5 +143,6 @@ rc-update add connmand
 
 echo -e "Rebooting the system"
 exit
+exit
 umount -R /mnt
 reboot
